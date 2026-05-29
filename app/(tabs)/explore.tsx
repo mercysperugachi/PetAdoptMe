@@ -13,9 +13,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function ExploreScreen() {
-  const { pets, isLoading: loadingPets, loadAllPets } =
+  const router = useRouter(); // 🔥 AGREGA ESTO AQUÍ
+  const { pets, isLoading: loadingPets, loadAllPets } = usePets()
     usePets();
 
   const {
@@ -159,6 +161,7 @@ export default function ExploreScreen() {
               <TouchableOpacity
                 activeOpacity={0.9}
                 style={styles.card}
+                onPress={() => router.push({ pathname: '/(pet)/[id]', params: { id: item.id } })}
               >
 
                 {/* IMAGE */}
