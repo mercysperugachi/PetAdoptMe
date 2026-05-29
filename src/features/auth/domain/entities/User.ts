@@ -8,4 +8,13 @@ export interface User {
   name: string;
   role: UserRole;
   createdAt: string;
+  document_id?: string;
+  phone?: string;
+  address?: string;
+  occupation?: string;
+  experience?: string;
+  home_description?: string;
+  latitude?: number;
+  longitude?: number;
+
 }
