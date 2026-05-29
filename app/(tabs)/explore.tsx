@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { usePets } from '@/src/features/pets/presentation/hooks/usePets';
 import { useAdoptions } from '@/src/features/adoptions/presentation/hooks/useAdoptions';
 import { useAuthStore } from '@/src/features/auth/presentation/store/authStore';
+import { usePets } from '@/src/features/pets/presentation/hooks/usePets';
+import { MotiView } from 'moti';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, Alert, FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ExploreScreen() {
   const { pets, isLoading: loadingPets, loadAllPets } = usePets();
@@ -16,7 +17,7 @@ export default function ExploreScreen() {
   const handleAdopt = (petId: string, shelterId: string, petName: string) => {
     Alert.alert(
       'Solicitud de Adopción',
-      `¿Deseas enviar una solicitud al refugio para adoptar a ${petName}?`,
+      `¿Deseas enviar una solicitud para adoptar a ${petName}?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -24,7 +25,7 @@ export default function ExploreScreen() {
           onPress: async () => {
             try {
               await applyForAdoption(petId, shelterId);
-              Alert.alert('¡Éxito!', `Tu solicitud por ${petName} ha sido enviada al refugio.`);
+              Alert.alert('¡Éxito!', `Tu solicitud por ${petName} ha sido enviada.`);
             } catch (error: any) {
               Alert.alert('Error', error.message);
             }
@@ -36,77 +37,105 @@ export default function ExploreScreen() {
 
   if (user?.role !== 'adoptante') {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.emptyText}>Esta pantalla es para adoptantes.</Text>
-        <Text style={styles.subtitleText}>Usa tu panel principal para gestionar tus propios registros.</Text>
-      </View>
+      <MotiView
+        className="flex-1 justify-center items-center bg-gradient-to-b from-slate-50 to-purple-50"
+        from={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ type: 'timing', duration: 500 }}
+      >
+        <Text className="text-6xl mb-4">🐕</Text>
+        <Text className="text-2xl font-bold text-slate-900 text-center">Esta pantalla es para adoptantes</Text>
+        <Text className="text-slate-500 text-center mt-3 px-8">Usa tu panel principal para gestionar tus propios registros.</Text>
+      </MotiView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Explorar Mascotas</Text>
-        <Text style={styles.headerSubtitle}>Encuentra a tu nuevo mejor amigo</Text>
-      </View>
+    <View className="flex-1 bg-gradient-to-b from-slate-50 to-purple-50">
+      {/* Header */}
+      <MotiView
+        className="px-6 py-4 pt-16 bg-white border-b border-slate-200"
+        from={{ opacity: 0, translateY: -20 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{ type: 'timing', duration: 600 }}
+      >
+        <Text className="text-3xl font-bold text-slate-900">Explorar 🔍</Text>
+        <Text className="text-sm text-slate-500 mt-2">Encuentra a tu nuevo mejor amigo</Text>
+      </MotiView>
 
       {loadingPets ? (
-        <ActivityIndicator size="large" color="#0F766E" style={{ marginTop: 50 }} />
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#a855f7" />
+        </View>
       ) : (
         <FlatList
           data={pets}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              {item.image_url ? (
-                <Image source={{ uri: item.image_url }} style={styles.cardImage} />
-              ) : (
-                <View style={[styles.cardImage, styles.cardImagePlaceholder]}>
-                  <Text style={styles.placeholderText}>🐾</Text>
-                </View>
-              )}
-              <View style={styles.cardInfo}>
-                <Text style={styles.petName}>{item.name}</Text>
-                <Text style={styles.petDetails}>{item.species} • {item.breed || 'Mestizo'}</Text>
-                <Text style={styles.petDescription} numberOfLines={2}>{item.description}</Text>
-              </View>
-              
-              <TouchableOpacity 
-                style={styles.adoptButton} 
-                onPress={() => handleAdopt(item.id, item.shelter_id, item.name)}
-                disabled={loadingAdoption}
+          keyExtractor={(item, idx) => item.id || idx.toString()}
+          contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 100 }}
+          renderItem={({ item, index }) => (
+            <MotiView
+              from={{ opacity: 0, translateY: 50 }}
+              animate={{ opacity: 1, translateY: 0 }}
+              transition={{ type: 'timing', duration: 400, delay: index * 100 }}
+            >
+              <TouchableOpacity
+                activeOpacity={0.9}
+                className="bg-white rounded-3xl overflow-hidden shadow-lg border-l-4 border-purple-500"
               >
-                <Text style={styles.adoptButtonText}>Adoptar</Text>
+                {/* Image */}
+                {item.image_url ? (
+                  <Image
+                    source={{ uri: item.image_url }}
+                    className="w-full h-48 bg-slate-200"
+                  />
+                ) : (
+                  <View className="w-full h-48 bg-gradient-to-br from-purple-200 to-pink-200 justify-center items-center">
+                    <Text className="text-6xl">🐾</Text>
+                  </View>
+                )}
+
+                {/* Content */}
+                <View className="p-5 bg-gradient-to-br from-white to-purple-50">
+                  <Text className="text-2xl font-bold text-slate-900">{item.name}</Text>
+                  <Text className="text-base text-purple-600 font-semibold mt-2">
+                    {item.species} • {item.breed || 'Mestizo'}
+                  </Text>
+                  <Text className="text-sm text-slate-600 mt-3 leading-5 line-clamp-2">
+                    {item.description}
+                  </Text>
+
+                  {/* Button */}
+                  <TouchableOpacity
+                    className={`mt-4 py-3 rounded-xl font-bold ${
+                      loadingAdoption
+                        ? 'bg-slate-400'
+                        : 'bg-gradient-to-r from-purple-500 to-pink-500 shadow-md'
+                    }`}
+                    onPress={() => handleAdopt(item.id, item.shelter_id, item.name)}
+                    disabled={loadingAdoption}
+                  >
+                    <Text className="text-white font-bold text-center text-lg">
+                      💕 Adoptar
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </TouchableOpacity>
-            </View>
+            </MotiView>
           )}
           ListEmptyComponent={
-            <Text style={styles.emptyText}>No hay mascotas disponibles en este momento.</Text>
+            <MotiView
+              className="items-center justify-center py-20"
+              from={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'timing', duration: 500 }}
+            >
+              <Text className="text-5xl mb-4">🔍</Text>
+              <Text className="text-slate-600 text-lg font-semibold">No hay mascotas disponibles</Text>
+              <Text className="text-slate-400 text-sm mt-2">Vuelve pronto para nuevas adopciones</Text>
+            </MotiView>
           }
         />
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
-  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F9FAFB', padding: 20 },
-  header: { padding: 24, paddingTop: 60, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
-  headerTitle: { fontSize: 28, fontWeight: 'bold', color: '#111827' },
-  headerSubtitle: { fontSize: 16, color: '#6B7280', marginTop: 4 },
-  listContainer: { padding: 16, gap: 16, paddingBottom: 100 },
-  card: { backgroundColor: '#FFFFFF', borderRadius: 20, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 },
-  cardImage: { width: '100%', height: 200, backgroundColor: '#E5E7EB' },
-  cardImagePlaceholder: { justifyContent: 'center', alignItems: 'center' },
-  placeholderText: { fontSize: 60 },
-  cardInfo: { padding: 16 },
-  petName: { fontSize: 22, fontWeight: 'bold', color: '#1F2937' },
-  petDetails: { fontSize: 15, color: '#0F766E', fontWeight: '600', marginTop: 4 },
-  petDescription: { fontSize: 14, color: '#6B7280', marginTop: 8, lineHeight: 20 },
-  adoptButton: { backgroundColor: '#0F766E', margin: 16, marginTop: 0, padding: 16, borderRadius: 12, alignItems: 'center' },
-  adoptButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
-  emptyText: { textAlign: 'center', marginTop: 40, color: '#6B7280', fontSize: 18, fontWeight: 'bold' },
-  subtitleText: { textAlign: 'center', marginTop: 8, color: '#9CA3AF', fontSize: 14 },
-});

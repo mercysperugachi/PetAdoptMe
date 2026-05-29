@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { MotiView } from 'moti';
+import React, { useRef, useState } from 'react';
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useChat } from '../../src/features/chat_ia/presentation/hooks/useChat';
 
 export default function ChatScreen() {
@@ -15,74 +16,82 @@ export default function ChatScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Text style={styles.avatarIcon}>🤖</Text>
+    <View className="flex-1 bg-gradient-to-b from-slate-50 to-blue-50">
+      {/* Header */}
+      <MotiView
+        className="flex-row items-center gap-4 px-6 py-4 pt-16 bg-white border-b border-slate-200"
+        from={{ opacity: 0, translateY: -20 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{ type: 'timing', duration: 600 }}
+      >
+        <View className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 justify-center items-center">
+          <Text className="text-xl">🤖</Text>
         </View>
-        <View>
-          <Text style={styles.headerTitle}>Asistente IA Gemini</Text>
-          <Text style={styles.headerSubtitle}>Tu experto 24/7 en mascotas</Text>
+        <View className="flex-1">
+          <Text className="text-xl font-bold text-slate-900">Asistente IA</Text>
+          <Text className="text-xs text-slate-500 mt-1">Tu experto 24/7 en mascotas</Text>
         </View>
-      </View>
+      </MotiView>
 
+      {/* Chat Messages */}
       <FlatList
         ref={flatListRef}
         data={messages}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.chatContainer}
+        keyExtractor={(item, idx) => item.id || idx.toString()}
+        contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 20 }}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
         renderItem={({ item }) => {
           const isModel = item.role === 'model';
           return (
-            <View style={[styles.messageBubble, isModel ? styles.modelBubble : styles.userBubble]}>
-              <Text style={[styles.messageText, isModel ? styles.modelText : styles.userText]}>
+            <MotiView
+              from={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'timing', duration: 300 }}
+              className={`max-w-4/5 px-4 py-3 rounded-2xl ${
+                isModel 
+                  ? 'self-start bg-gradient-to-br from-slate-100 to-slate-200 rounded-tl-none' 
+                  : 'self-end bg-gradient-to-br from-blue-500 to-cyan-600 rounded-tr-none'
+              }`}
+            >
+              <Text className={`text-base leading-6 ${
+                isModel ? 'text-slate-800' : 'text-white'
+              }`}>
                 {item.text}
               </Text>
-            </View>
+            </MotiView>
           );
         }}
       />
 
+      {/* Input Area */}
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <View style={styles.inputContainer}>
+        <View className="flex-row items-end gap-3 px-4 py-4 bg-white border-t border-slate-200">
           <TextInput
-            style={styles.textInput}
+            className="flex-1 bg-slate-100 border border-slate-300 rounded-2xl px-4 py-3 text-base text-slate-900"
             placeholder="Pregunta sobre salud animal..."
             value={inputText}
             onChangeText={setInputText}
             multiline
+            maxHeight={100}
+            placeholderTextColor="#9ca3af"
           />
-          <TouchableOpacity 
-            style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]} 
+          <TouchableOpacity
+            className={`w-12 h-12 rounded-full justify-center items-center ${
+              !inputText.trim() || isLoading
+                ? 'bg-slate-300'
+                : 'bg-gradient-to-br from-blue-500 to-cyan-600 shadow-lg'
+            }`}
             onPress={handleSend}
             disabled={!inputText.trim() || isLoading}
           >
-            {isLoading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.sendIcon}>➤</Text>}
+            {isLoading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className="text-white text-xl">➤</Text>
+            )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 20, paddingTop: 60, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
-  avatarContainer: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#CCFBF1', justifyContent: 'center', alignItems: 'center', marginRight: 15 },
-  avatarIcon: { fontSize: 24 },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#111827' },
-  headerSubtitle: { fontSize: 14, color: '#6B7280' },
-  chatContainer: { padding: 16, gap: 12 },
-  messageBubble: { maxWidth: '80%', padding: 14, borderRadius: 20 },
-  modelBubble: { backgroundColor: '#F3F4F6', alignSelf: 'flex-start', borderBottomLeftRadius: 4 },
-  userBubble: { backgroundColor: '#0F766E', alignSelf: 'flex-end', borderBottomRightRadius: 4 },
-  messageText: { fontSize: 16, lineHeight: 22 },
-  modelText: { color: '#1F2937' },
-  userText: { color: '#FFFFFF' },
-  inputContainer: { flexDirection: 'row', padding: 16, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#E5E7EB', alignItems: 'flex-end' },
-  textInput: { flex: 1, backgroundColor: '#F3F4F6', borderRadius: 20, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, minHeight: 48, maxHeight: 120, fontSize: 16, marginRight: 12 },
-  sendButton: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#0F766E', justifyContent: 'center', alignItems: 'center' },
-  sendButtonDisabled: { backgroundColor: '#9CA3AF' },
-  sendIcon: { color: '#FFFFFF', fontSize: 18, transform: [{ rotate: '-45deg' }] }
-});

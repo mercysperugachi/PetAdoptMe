@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  View, Text, StyleSheet, FlatList, TouchableOpacity, 
+  View, Text, FlatList, TouchableOpacity, 
   Modal, TextInput, Alert, ActivityIndicator, Image, 
   KeyboardAvoidingView, Platform, ScrollView 
 } from 'react-native';
+import { MotiView } from 'moti';
 import * as ImagePicker from 'expo-image-picker';
 import { usePets } from '@/src/features/pets/presentation/hooks/usePets';
 import { useAuthStore } from '@/src/features/auth/presentation/store/authStore';
@@ -113,91 +114,215 @@ export default function ShelterDashboard() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.headerTitle}>Mis Refugiados</Text>
-          <Text style={styles.headerSubtitle}>Gestiona los registros activos</Text>
+    <View className="flex-1 bg-gradient-to-b from-slate-50 to-slate-100">
+      {/* Header */}
+      <MotiView 
+        className="flex-row items-center justify-between px-6 py-6 pt-16 bg-white border-b border-slate-200 shadow-sm"
+        from={{ opacity: 0, translateY: -20 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{ type: 'timing', duration: 600 }}
+      >
+        <View className="flex-1">
+          <Text className="text-3xl font-bold text-slate-900">Mis Mascotas 🐕</Text>
+          <Text className="text-sm text-slate-500 mt-1">Gestiona tus registros activos</Text>
         </View>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>Salir</Text>
+        <TouchableOpacity 
+          className="bg-gradient-to-br from-red-500 to-red-600 px-4 py-2 rounded-lg shadow-md"
+          onPress={handleLogout}
+        >
+          <Text className="text-white font-bold text-sm">Salir</Text>
         </TouchableOpacity>
-      </View>
+      </MotiView>
 
       {isLoading && !modalVisible ? (
-        <ActivityIndicator size="large" color="#0F766E" style={{ marginTop: 50 }} />
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#14b8a6" />
+        </View>
       ) : (
         <FlatList
           data={pets}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              {item.image_url ? (
-                <Image source={{ uri: item.image_url }} style={styles.cardImage} />
-              ) : (
-                <View style={[styles.cardImage, styles.cardImagePlaceholder]}>
-                  <Text style={styles.placeholderText}>🐾</Text>
+          keyExtractor={(item, idx) => item.id || idx.toString()}
+          contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 100 }}
+          renderItem={({ item, index }) => (
+            <MotiView
+              from={{ opacity: 0, translateX: -50 }}
+              animate={{ opacity: 1, translateX: 0 }}
+              transition={{ type: 'timing', duration: 400, delay: index * 50 }}
+            >
+              <TouchableOpacity 
+                activeOpacity={0.8}
+                className="flex-row bg-white rounded-2xl overflow-hidden shadow-md border-l-4 border-teal-500"
+              >
+                {item.image_url ? (
+                  <Image 
+                    source={{ uri: item.image_url }} 
+                    className="w-24 h-24 bg-slate-200"
+                  />
+                ) : (
+                  <View className="w-24 h-24 bg-gradient-to-br from-teal-200 to-teal-300 justify-center items-center">
+                    <Text className="text-3xl">🐾</Text>
+                  </View>
+                )}
+                <View className="flex-1 p-4 justify-center">
+                  <Text className="text-lg font-bold text-slate-900">{item.name}</Text>
+                  <Text className="text-sm text-teal-600 font-semibold mt-1">
+                    {item.species} • {item.age ? `${item.age} años` : 'Edad desc.'}
+                  </Text>
+                  <Text className="text-xs text-slate-500 mt-2 line-clamp-1">
+                    {item.breed || 'Raza no especificada'}
+                  </Text>
                 </View>
-              )}
-              <View style={styles.cardInfo}>
-                <Text style={styles.petName}>{item.name}</Text>
-                <Text style={styles.petDetails}>{item.species} • {item.age ? `${item.age} años` : 'Edad desc.'}</Text>
-              </View>
-              {user?.role === 'refugio' && (
-                <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item.id, item.name)}>
-                  <Text style={styles.deleteButtonText}>🗑️</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+                {user?.role === 'refugio' && (
+                  <TouchableOpacity 
+                    className="bg-red-50 px-4 justify-center"
+                    onPress={() => handleDelete(item.id, item.name)}
+                  >
+                    <Text className="text-2xl">🗑️</Text>
+                  </TouchableOpacity>
+                )}
+              </TouchableOpacity>
+            </MotiView>
           )}
           ListEmptyComponent={
-            <Text style={styles.emptyText}>No hay mascotas registradas aún.</Text>
+            <MotiView 
+              className="items-center justify-center py-20"
+              from={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ type: 'timing', duration: 500 }}
+            >
+              <Text className="text-5xl mb-4">🐾</Text>
+              <Text className="text-slate-500 text-lg font-semibold">No hay mascotas registradas</Text>
+              <Text className="text-slate-400 text-sm mt-2">¡Agrega tu primera mascota para comenzar!</Text>
+            </MotiView>
           }
         />
       )}
 
-      {/* Botón Flotante para Agregar */}
+      {/* Botón Flotante */}
       {user?.role === 'refugio' && (
-        <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
-          <Text style={styles.fabText}>+</Text>
-        </TouchableOpacity>
+        <MotiView
+          className="absolute bottom-8 right-6 w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 shadow-lg justify-center items-center"
+          from={{ scale: 0, rotate: '0deg' }}
+          animate={{ scale: 1, rotate: '360deg' }}
+          transition={{ type: 'spring', delay: 200 }}
+          onPress={() => setModalVisible(true)}
+        >
+          <TouchableOpacity 
+            className="w-full h-full justify-center items-center"
+            onPress={() => setModalVisible(true)}
+          >
+            <Text className="text-white text-3xl font-bold">+</Text>
+          </TouchableOpacity>
+        </MotiView>
       )}
 
-      {/* MODAL DE REGISTRO */}
+      {/* MODAL */}
       <Modal visible={modalVisible} animationType="slide" presentationStyle="pageSheet">
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Registro de Mascota</Text>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+          className="flex-1 bg-slate-50"
+        >
+          {/* Modal Header */}
+          <View className="flex-row items-center justify-between px-6 py-4 bg-white border-b border-slate-200 pt-16">
+            <Text className="text-2xl font-bold text-slate-900">Registrar Mascota</Text>
             <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Text style={styles.closeText}>✕</Text>
+              <Text className="text-3xl text-slate-400">✕</Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView contentContainerStyle={styles.modalContent}>
+          <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} className="flex-1">
             
-            {/* Subida de Imagen */}
-            <TouchableOpacity style={styles.imagePickerContainer} onPress={pickImage}>
+            {/* Image Picker */}
+            <TouchableOpacity 
+              onPress={pickImage}
+              className="w-full h-40 rounded-2xl bg-gradient-to-br from-blue-100 to-teal-100 justify-center items-center mb-6 border-2 border-dashed border-blue-300 overflow-hidden"
+            >
               {imageUri ? (
-                <Image source={{ uri: imageUri }} style={styles.previewImage} />
+                <Image source={{ uri: imageUri }} className="w-full h-full" />
               ) : (
-                <View style={styles.imagePlaceholder}>
-                  <Text style={styles.imagePlaceholderIcon}>📷</Text>
-                  <Text style={styles.imagePlaceholderText}>Subir Foto Principal</Text>
+                <View className="items-center">
+                  <Text className="text-4xl mb-2">📷</Text>
+                  <Text className="text-blue-700 font-semibold">Subir Foto Principal</Text>
                 </View>
               )}
             </TouchableOpacity>
 
-            <Text style={styles.sectionTitle}>Información Básica</Text>
+            <Text className="text-lg font-bold text-slate-900 mb-4">Información Básica</Text>
             
             <TextInput
-              style={styles.input}
+              className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-base mb-4 text-slate-900"
               placeholder="Nombre de la mascota (Ej. Luna)"
               value={name}
               onChangeText={setName}
+              placeholderTextColor="#9ca3af"
             />
 
-            <View style={styles.row}>
+            <View className="flex-row gap-4 mb-4">
+              <TextInput
+                className="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-3 text-base text-slate-900"
+                placeholder="Especie"
+                value={species}
+                onChangeText={setSpecies}
+                placeholderTextColor="#9ca3af"
+              />
+              <TextInput
+                className="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-3 text-base text-slate-900"
+                placeholder="Raza"
+                value={breed}
+                onChangeText={setBreed}
+                placeholderTextColor="#9ca3af"
+              />
+            </View>
+
+            <View className="flex-row gap-4 mb-4">
+              <TextInput
+                className="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-3 text-base text-slate-900"
+                placeholder="Edad (años)"
+                keyboardType="numeric"
+                value={age}
+                onChangeText={setAge}
+                placeholderTextColor="#9ca3af"
+              />
+              <TextInput
+                className="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-3 text-base text-slate-900"
+                placeholder="Tamaño"
+                value={size}
+                onChangeText={setSize}
+                placeholderTextColor="#9ca3af"
+              />
+            </View>
+
+            <TextInput
+              className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-base mb-6 text-slate-900 h-24"
+              placeholder="Descripción de la mascota"
+              multiline
+              value={description}
+              onChangeText={setDescription}
+              placeholderTextColor="#9ca3af"
+              textAlignVertical="top"
+            />
+
+            <TouchableOpacity
+              className={`w-full py-4 rounded-xl font-bold text-white text-lg ${
+                isSubmitting 
+                  ? 'bg-slate-400' 
+                  : 'bg-gradient-to-r from-emerald-500 to-teal-600'
+              }`}
+              onPress={handleSavePet}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-white font-bold text-lg text-center">Guardar Mascota</Text>
+              )}
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </Modal>
+    </View>
+  );
+}
               <TextInput
                 style={[styles.input, styles.flex1, { marginRight: 8 }]}
                 placeholder="Especie (Perro/Gato)"
