@@ -9,5 +9,5 @@ export interface AdoptionRequest {
   created_at: string;
   // Relaciones para mostrar en la interfaz
   pets?: { name: string; image_url: string };
-  profiles?: { name: string; email: string };
+  profiles?: { name: string; email: string; phone?: string }; // Añade el phone
 }

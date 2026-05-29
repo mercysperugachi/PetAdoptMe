@@ -68,6 +68,15 @@ export default function RequestsScreen() {
                 {user?.role === 'refugio' ? `Solicitante: ${item.profiles?.name}` : `Refugio ID: ${item.shelter_id.substring(0,8)}...`}
               </Text>
               
+              {/* 🔥 NUEVO: Mostrar datos de contacto del adoptante si la solicitud está aprobada */}
+              {item.status === 'approved' && user?.role === 'refugio' && (
+                <View style={styles.contactContainer}>
+                  <Text style={styles.contactTitle}>Contacto para entrega:</Text>
+                  <Text style={styles.contactText}>📞 {item.profiles?.phone || 'No registró teléfono'}</Text>
+                  <Text style={styles.contactText}>✉️ {item.profiles?.email}</Text>
+                </View>
+              )}
+              
               {user?.role === 'refugio' && item.status === 'pending' && (
                 <View style={styles.actionButtons}>
                   <TouchableOpacity style={[styles.button, styles.btnReject]} onPress={() => handleAction(item.id, 'rejected')}>
@@ -110,4 +119,9 @@ const styles = StyleSheet.create({
   btnApprove: { backgroundColor: '#0F766E' },
   btnApproveText: { color: '#FFFFFF', fontWeight: 'bold' },
   emptyText: { textAlign: 'center', marginTop: 40, color: '#6B7280', fontSize: 16 },
+  
+  // Estilos del recuadro de contacto
+  contactContainer: { marginTop: 8, padding: 12, backgroundColor: '#F0FDFA', borderRadius: 12, borderWidth: 1, borderColor: '#CCFBF1' },
+  contactTitle: { color: '#0F766E', fontWeight: 'bold', marginBottom: 6, fontSize: 14 },
+  contactText: { color: '#0F766E', fontSize: 14, marginBottom: 4 }
 });

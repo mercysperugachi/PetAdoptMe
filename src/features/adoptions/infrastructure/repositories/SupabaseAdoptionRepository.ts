@@ -23,7 +23,7 @@ export class SupabaseAdoptionRepository implements IAdoptionRepository {
   async getRequestsForShelter(shelterId: string): Promise<AdoptionRequest[]> {
     const { data, error } = await supabase
       .from('adoption_requests')
-      .select('*, pets(name, image_url), profiles(name, email)')
+      .select('*, pets(name, image_url), profiles(name, email, phone)') // 🔥 Añade "phone" al query
       .eq('shelter_id', shelterId)
       .order('created_at', { ascending: false });
 
@@ -34,7 +34,7 @@ export class SupabaseAdoptionRepository implements IAdoptionRepository {
   async getRequestsForApplicant(applicantId: string): Promise<AdoptionRequest[]> {
     const { data, error } = await supabase
       .from('adoption_requests')
-      .select('*, pets(name, image_url), profiles(name, email)')
+      .select('*, pets(name, image_url), profiles(name, email, phone)') // 🔥 Añade "phone" al query
       .eq('applicant_id', applicantId)
       .order('created_at', { ascending: false });
 

@@ -228,28 +228,22 @@ export default function ShelterDashboard() {
 
                 {user?.role === 'refugio' && (
                   <View style={{ flexDirection: 'row', gap: 10 }}>
-                    {/* Botón de Editar */}
                     <TouchableOpacity
-                      style={styles.fab}
-                      onPress={() => {
-                        setEditingId(null); 
-                        setName(''); 
-                        setBreed(''); 
-                        setAge(''); 
-                        setDescription(''); 
-                        setImageUri(null);
-                        setModalVisible(true);
-                      }}
+                      style={styles.deleteButton}
+                      onPress={() => handleEdit(item)}
                     >
                       <Text style={{ fontSize: 24 }}>✏️</Text>
                     </TouchableOpacity>
                     
-                    {/* Botón de Eliminar existente */}
-                    <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item.id, item.name)}>
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => handleDelete(item.id, item.name)}
+                    >
                       <Text style={{ fontSize: 24 }}>🗑️</Text>
                     </TouchableOpacity>
-                </View>
-                   )}   </View>
+                  </View>
+                )}
+              </View>
             </MotiView>
           )}
         />
