@@ -1,61 +1,124 @@
-import { MotiView } from 'moti';
 import React, { useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
+import { MotiView } from 'moti';
+
 import { useChat } from '../../src/features/chat_ia/presentation/hooks/useChat';
 
 export default function ChatScreen() {
   const [inputText, setInputText] = useState('');
-  const { messages, isLoading, sendMessage } = useChat();
-  const flatListRef = useRef<FlatList>(null);
+
+  const { messages, isLoading, sendMessage } =
+    useChat();
+
+  const flatListRef =
+    useRef<FlatList>(null);
 
   const handleSend = async () => {
-    if (!inputText.trim() || isLoading) return;
-    const textToSend = inputText.trim();
+    if (
+      !inputText.trim() ||
+      isLoading
+    )
+      return;
+
+    const textToSend =
+      inputText.trim();
+
     setInputText('');
+
     await sendMessage(textToSend);
   };
 
   return (
-    <View className="flex-1 bg-gradient-to-b from-slate-50 to-blue-50">
-      {/* Header */}
+    <View style={styles.container}>
+
+      {/* HEADER */}
       <MotiView
-        className="flex-row items-center gap-4 px-6 py-4 pt-16 bg-white border-b border-slate-200"
-        from={{ opacity: 0, translateY: -20 }}
-        animate={{ opacity: 1, translateY: 0 }}
-        transition={{ type: 'timing', duration: 600 }}
+        style={styles.header}
+        from={{
+          opacity: 0,
+          translateY: -20,
+        }}
+        animate={{
+          opacity: 1,
+          translateY: 0,
+        }}
       >
-        <View className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 justify-center items-center">
-          <Text className="text-xl">🤖</Text>
+        <View style={styles.botAvatar}>
+          <Text style={styles.botEmoji}>
+            🤖
+          </Text>
         </View>
-        <View className="flex-1">
-          <Text className="text-xl font-bold text-slate-900">Asistente IA</Text>
-          <Text className="text-xs text-slate-500 mt-1">Tu experto 24/7 en mascotas</Text>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.headerTitle}>
+            Asistente IA
+          </Text>
+
+          <Text style={styles.headerSubtitle}>
+            Tu experto en mascotas 24/7
+          </Text>
         </View>
       </MotiView>
 
-      {/* Chat Messages */}
+      {/* MENSAJES */}
       <FlatList
         ref={flatListRef}
         data={messages}
-        keyExtractor={(item, idx) => item.id || idx.toString()}
-        contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 20 }}
-        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+        keyExtractor={(item, idx) =>
+          item.id || idx.toString()
+        }
+        contentContainerStyle={
+          styles.messagesContainer
+        }
+        onContentSizeChange={() =>
+          flatListRef.current?.scrollToEnd({
+            animated: true,
+          })
+        }
         renderItem={({ item }) => {
-          const isModel = item.role === 'model';
+          const isModel =
+            item.role === 'model';
+
           return (
             <MotiView
-              from={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: 'timing', duration: 300 }}
-              className={`max-w-4/5 px-4 py-3 rounded-2xl ${
-                isModel 
-                  ? 'self-start bg-gradient-to-br from-slate-100 to-slate-200 rounded-tl-none' 
-                  : 'self-end bg-gradient-to-br from-blue-500 to-cyan-600 rounded-tr-none'
-              }`}
+              from={{
+                opacity: 0,
+                scale: 0.9,
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+              }}
+              transition={{
+                type: 'timing',
+                duration: 250,
+              }}
+              style={[
+                styles.messageBubble,
+                isModel
+                  ? styles.aiBubble
+                  : styles.userBubble,
+              ]}
             >
-              <Text className={`text-base leading-6 ${
-                isModel ? 'text-slate-800' : 'text-white'
-              }`}>
+              <Text
+                style={[
+                  styles.messageText,
+                  isModel
+                    ? styles.aiText
+                    : styles.userText,
+                ]}
+              >
                 {item.text}
               </Text>
             </MotiView>
@@ -63,31 +126,44 @@ export default function ChatScreen() {
         }}
       />
 
-      {/* Input Area */}
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <View className="flex-row items-end gap-3 px-4 py-4 bg-white border-t border-slate-200">
+      {/* INPUT */}
+      <KeyboardAvoidingView
+        behavior={
+          Platform.OS === 'ios'
+            ? 'padding'
+            : 'height'
+        }
+      >
+        <View style={styles.inputContainer}>
+
           <TextInput
-            className="flex-1 bg-slate-100 border border-slate-300 rounded-2xl px-4 py-3 text-base text-slate-900"
-            placeholder="Pregunta sobre salud animal..."
+            style={styles.input}
+            placeholder="Pregunta algo sobre mascotas..."
+            placeholderTextColor="#94a3b8"
             value={inputText}
             onChangeText={setInputText}
             multiline
-            maxHeight={100}
-            placeholderTextColor="#9ca3af"
           />
+
           <TouchableOpacity
-            className={`w-12 h-12 rounded-full justify-center items-center ${
-              !inputText.trim() || isLoading
-                ? 'bg-slate-300'
-                : 'bg-gradient-to-br from-blue-500 to-cyan-600 shadow-lg'
-            }`}
+            style={[
+              styles.sendButton,
+              (!inputText.trim() ||
+                isLoading) &&
+                styles.sendButtonDisabled,
+            ]}
             onPress={handleSend}
-            disabled={!inputText.trim() || isLoading}
+            disabled={
+              !inputText.trim() ||
+              isLoading
+            }
           >
             {isLoading ? (
-              <ActivityIndicator color="white" />
+              <ActivityIndicator color="#fff" />
             ) : (
-              <Text className="text-white text-xl">➤</Text>
+              <Text style={styles.sendText}>
+                ➤
+              </Text>
             )}
           </TouchableOpacity>
         </View>
@@ -95,3 +171,128 @@ export default function ChatScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f1f5f9',
+  },
+
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    paddingTop: 60,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+
+  botAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 999,
+    backgroundColor: '#0ea5e9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+
+  botEmoji: {
+    fontSize: 24,
+  },
+
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+
+  headerSubtitle: {
+    fontSize: 13,
+    color: '#64748b',
+    marginTop: 3,
+  },
+
+  messagesContainer: {
+    padding: 16,
+    paddingBottom: 20,
+  },
+
+  messageBubble: {
+    maxWidth: '82%',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
+    marginBottom: 12,
+  },
+
+  aiBubble: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#e2e8f0',
+    borderTopLeftRadius: 6,
+  },
+
+  userBubble: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#0ea5e9',
+    borderTopRightRadius: 6,
+  },
+
+  messageText: {
+    fontSize: 16,
+    lineHeight: 24,
+  },
+
+  aiText: {
+    color: '#0f172a',
+  },
+
+  userText: {
+    color: '#ffffff',
+  },
+
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+  },
+
+  input: {
+    flex: 1,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    maxHeight: 120,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    color: '#0f172a',
+  },
+
+  sendButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 999,
+    backgroundColor: '#0284c7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+
+  sendButtonDisabled: {
+    backgroundColor: '#94a3b8',
+  },
+
+  sendText: {
+    color: '#ffffff',
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+});

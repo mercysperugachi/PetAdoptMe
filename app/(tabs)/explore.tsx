@@ -3,135 +3,258 @@ import { useAuthStore } from '@/src/features/auth/presentation/store/authStore';
 import { usePets } from '@/src/features/pets/presentation/hooks/usePets';
 import { MotiView } from 'moti';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, Alert, FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 export default function ExploreScreen() {
-  const { pets, isLoading: loadingPets, loadAllPets } = usePets();
-  const { applyForAdoption, isLoading: loadingAdoption } = useAdoptions();
+  const { pets, isLoading: loadingPets, loadAllPets } =
+    usePets();
+
+  const {
+    applyForAdoption,
+    isLoading: loadingAdoption,
+  } = useAdoptions();
+
   const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     loadAllPets();
   }, []);
 
-  const handleAdopt = (petId: string, shelterId: string, petName: string) => {
+  const handleAdopt = (
+    petId: string,
+    shelterId: string,
+    petName: string
+  ) => {
     Alert.alert(
       'Solicitud de Adopción',
       `¿Deseas enviar una solicitud para adoptar a ${petName}?`,
       [
-        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
         {
           text: 'Enviar Solicitud',
           onPress: async () => {
             try {
-              await applyForAdoption(petId, shelterId);
-              Alert.alert('¡Éxito!', `Tu solicitud por ${petName} ha sido enviada.`);
+              await applyForAdoption(
+                petId,
+                shelterId
+              );
+
+              Alert.alert(
+                '¡Éxito!',
+                `Tu solicitud por ${petName} ha sido enviada.`
+              );
             } catch (error: any) {
-              Alert.alert('Error', error.message);
+              Alert.alert(
+                'Error',
+                error.message
+              );
             }
-          }
-        }
+          },
+        },
       ]
     );
   };
 
+  // SOLO ADOPTANTES
   if (user?.role !== 'adoptante') {
     return (
       <MotiView
-        className="flex-1 justify-center items-center bg-gradient-to-b from-slate-50 to-purple-50"
+        style={styles.notAllowedContainer}
         from={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ type: 'timing', duration: 500 }}
+        transition={{
+          type: 'timing',
+          duration: 500,
+        }}
       >
-        <Text className="text-6xl mb-4">🐕</Text>
-        <Text className="text-2xl font-bold text-slate-900 text-center">Esta pantalla es para adoptantes</Text>
-        <Text className="text-slate-500 text-center mt-3 px-8">Usa tu panel principal para gestionar tus propios registros.</Text>
+        <Text style={styles.emoji}>
+          🐕
+        </Text>
+
+        <Text style={styles.notAllowedTitle}>
+          Esta pantalla es para adoptantes
+        </Text>
+
+        <Text style={styles.notAllowedText}>
+          Usa tu panel principal para
+          gestionar tus propios registros.
+        </Text>
       </MotiView>
     );
   }
 
   return (
-    <View className="flex-1 bg-gradient-to-b from-slate-50 to-purple-50">
-      {/* Header */}
+    <View style={styles.container}>
+
+      {/* HEADER */}
       <MotiView
-        className="px-6 py-4 pt-16 bg-white border-b border-slate-200"
-        from={{ opacity: 0, translateY: -20 }}
-        animate={{ opacity: 1, translateY: 0 }}
-        transition={{ type: 'timing', duration: 600 }}
+        style={styles.header}
+        from={{
+          opacity: 0,
+          translateY: -20,
+        }}
+        animate={{
+          opacity: 1,
+          translateY: 0,
+        }}
+        transition={{
+          type: 'timing',
+          duration: 600,
+        }}
       >
-        <Text className="text-3xl font-bold text-slate-900">Explorar 🔍</Text>
-        <Text className="text-sm text-slate-500 mt-2">Encuentra a tu nuevo mejor amigo</Text>
+        <Text style={styles.headerTitle}>
+          Explorar 🔍
+        </Text>
+
+        <Text style={styles.headerSubtitle}>
+          Encuentra a tu nuevo mejor amigo
+        </Text>
       </MotiView>
 
+      {/* LOADING */}
       {loadingPets ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#a855f7" />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator
+            size="large"
+            color="#a855f7"
+          />
         </View>
       ) : (
         <FlatList
           data={pets}
-          keyExtractor={(item, idx) => item.id || idx.toString()}
-          contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 100 }}
+          keyExtractor={(item, idx) =>
+            item.id || idx.toString()
+          }
+          contentContainerStyle={
+            styles.listContainer
+          }
           renderItem={({ item, index }) => (
             <MotiView
-              from={{ opacity: 0, translateY: 50 }}
-              animate={{ opacity: 1, translateY: 0 }}
-              transition={{ type: 'timing', duration: 400, delay: index * 100 }}
+              from={{
+                opacity: 0,
+                translateY: 50,
+              }}
+              animate={{
+                opacity: 1,
+                translateY: 0,
+              }}
+              transition={{
+                type: 'timing',
+                duration: 400,
+                delay: index * 100,
+              }}
             >
               <TouchableOpacity
                 activeOpacity={0.9}
-                className="bg-white rounded-3xl overflow-hidden shadow-lg border-l-4 border-purple-500"
+                style={styles.card}
               >
-                {/* Image */}
+
+                {/* IMAGE */}
                 {item.image_url ? (
                   <Image
-                    source={{ uri: item.image_url }}
-                    className="w-full h-48 bg-slate-200"
+                    source={{
+                      uri: item.image_url,
+                    }}
+                    style={styles.image}
                   />
                 ) : (
-                  <View className="w-full h-48 bg-gradient-to-br from-purple-200 to-pink-200 justify-center items-center">
-                    <Text className="text-6xl">🐾</Text>
+                  <View style={styles.imagePlaceholder}>
+                    <Text style={styles.imageEmoji}>
+                      🐾
+                    </Text>
                   </View>
                 )}
 
-                {/* Content */}
-                <View className="p-5 bg-gradient-to-br from-white to-purple-50">
-                  <Text className="text-2xl font-bold text-slate-900">{item.name}</Text>
-                  <Text className="text-base text-purple-600 font-semibold mt-2">
-                    {item.species} • {item.breed || 'Mestizo'}
+                {/* CONTENT */}
+                <View style={styles.cardContent}>
+
+                  <Text style={styles.petName}>
+                    {item.name}
                   </Text>
-                  <Text className="text-sm text-slate-600 mt-3 leading-5 line-clamp-2">
+
+                  <Text style={styles.petInfo}>
+                    {item.species} •{' '}
+                    {item.breed ||
+                      'Mestizo'}
+                  </Text>
+
+                  <Text
+                    style={styles.description}
+                  >
                     {item.description}
                   </Text>
 
-                  {/* Button */}
+                  {/* BUTTON */}
                   <TouchableOpacity
-                    className={`mt-4 py-3 rounded-xl font-bold ${
+                    style={[
+                      styles.adoptButton,
+                      loadingAdoption &&
+                        styles.disabledButton,
+                    ]}
+                    onPress={() =>
+                      handleAdopt(
+                        item.id,
+                        item.shelter_id,
+                        item.name
+                      )
+                    }
+                    disabled={
                       loadingAdoption
-                        ? 'bg-slate-400'
-                        : 'bg-gradient-to-r from-purple-500 to-pink-500 shadow-md'
-                    }`}
-                    onPress={() => handleAdopt(item.id, item.shelter_id, item.name)}
-                    disabled={loadingAdoption}
+                    }
                   >
-                    <Text className="text-white font-bold text-center text-lg">
+                    <Text
+                      style={
+                        styles.buttonText
+                      }
+                    >
                       💕 Adoptar
                     </Text>
                   </TouchableOpacity>
+
                 </View>
               </TouchableOpacity>
             </MotiView>
           )}
           ListEmptyComponent={
             <MotiView
-              className="items-center justify-center py-20"
-              from={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: 'timing', duration: 500 }}
+              style={styles.emptyContainer}
+              from={{
+                opacity: 0,
+                scale: 0.8,
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+              }}
+              transition={{
+                type: 'timing',
+                duration: 500,
+              }}
             >
-              <Text className="text-5xl mb-4">🔍</Text>
-              <Text className="text-slate-600 text-lg font-semibold">No hay mascotas disponibles</Text>
-              <Text className="text-slate-400 text-sm mt-2">Vuelve pronto para nuevas adopciones</Text>
+              <Text style={styles.emptyEmoji}>
+                🔍
+              </Text>
+
+              <Text style={styles.emptyTitle}>
+                No hay mascotas disponibles
+              </Text>
+
+              <Text style={styles.emptyText}>
+                Vuelve pronto para nuevas
+                adopciones
+              </Text>
             </MotiView>
           }
         />
@@ -139,3 +262,164 @@ export default function ExploreScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+
+  header: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    paddingTop: 64,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+
+  headerTitle: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#64748b',
+    marginTop: 8,
+  },
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  listContainer: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    overflow: 'hidden',
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#a855f7',
+    elevation: 4,
+  },
+
+  image: {
+    width: '100%',
+    height: 190,
+    backgroundColor: '#cbd5e1',
+  },
+
+  imagePlaceholder: {
+    width: '100%',
+    height: 190,
+    backgroundColor: '#e9d5ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  imageEmoji: {
+    fontSize: 60,
+  },
+
+  cardContent: {
+    padding: 20,
+  },
+
+  petName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+
+  petInfo: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#9333ea',
+    marginTop: 8,
+  },
+
+  description: {
+    fontSize: 14,
+    color: '#475569',
+    marginTop: 12,
+    lineHeight: 22,
+  },
+
+  adoptButton: {
+    marginTop: 16,
+    backgroundColor: '#a855f7',
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+
+  disabledButton: {
+    backgroundColor: '#94a3b8',
+  },
+
+  buttonText: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  emptyContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 80,
+  },
+
+  emptyEmoji: {
+    fontSize: 50,
+    marginBottom: 16,
+  },
+
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#475569',
+  },
+
+  emptyText: {
+    fontSize: 14,
+    color: '#94a3b8',
+    marginTop: 8,
+  },
+
+  notAllowedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 24,
+  },
+
+  emoji: {
+    fontSize: 60,
+    marginBottom: 16,
+  },
+
+  notAllowedTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    textAlign: 'center',
+  },
+
+  notAllowedText: {
+    fontSize: 15,
+    color: '#64748b',
+    textAlign: 'center',
+    marginTop: 12,
+    lineHeight: 22,
+    paddingHorizontal: 20,
+  },
+}); 
