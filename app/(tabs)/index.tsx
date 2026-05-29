@@ -24,7 +24,8 @@ import { CreatePetDTO } from '@/src/features/pets/domain/entities/Pet';
 import { useAuth } from '@/src/features/auth/presentation/hooks/useAuth';
 
 export default function ShelterDashboard() {
-  const { pets, isLoading, loadAllPets, createPet, deletePet } = usePets();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const { pets, isLoading, loadAllPets, createPet, deletePet,updatePet } = usePets();
 
   const user = useAuthStore((state) => state.user);
 
@@ -38,6 +39,7 @@ export default function ShelterDashboard() {
   const [age, setAge] = useState('');
   const [size, setSize] = useState('Mediano');
   const [description, setDescription] = useState('');
+  
 
   const { logout } = useAuth();
 
@@ -80,40 +82,24 @@ export default function ShelterDashboard() {
   };
 
   const handleSavePet = async () => {
-    if (!name || !species) {
-      Alert.alert(
-        'Error',
-        'Nombre y especie son obligatorios'
-      );
-      return;
-    }
-
+    if (!name || !species) return Alert.alert('Error', 'Nombre y especie son obligatorios');
     setIsSubmitting(true);
-
     try {
-      const newPet: CreatePetDTO = {
-        name,
-        species,
-        breed,
-        age: age ? parseInt(age) : undefined,
-        size,
-        description,
-        imageUri: imageUri || undefined,
+      const petData: CreatePetDTO = {
+        name, species, breed, age: age ? parseInt(age) : undefined,
+        size, description, imageUri: imageUri || undefined,
       };
 
-      await createPet(newPet);
+      if (editingId) {
+        await updatePet(editingId, petData);
+        Alert.alert('Éxito', 'Mascota actualizada');
+      } else {
+        await createPet(petData);
+        Alert.alert('Éxito', 'Mascota registrada');
+      }
 
-      Alert.alert(
-        'Éxito',
-        'Mascota registrada'
-      );
-
-      setName('');
-      setBreed('');
-      setAge('');
-      setDescription('');
-      setImageUri(null);
-
+      // Limpiar formulario
+      setEditingId(null); setName(''); setBreed(''); setAge(''); setDescription(''); setImageUri(null);
       setModalVisible(false);
     } catch (error: any) {
       Alert.alert('Error', error.message);
@@ -135,6 +121,18 @@ export default function ShelterDashboard() {
         },
       ]
     );
+  };
+
+  const handleEdit = (pet: any) => {
+    setEditingId(pet.id);
+    setName(pet.name);
+    setSpecies(pet.species);
+    setBreed(pet.breed || '');
+    setAge(pet.age ? pet.age.toString() : '');
+    setSize(pet.size || '');
+    setDescription(pet.description || '');
+    setImageUri(pet.image_url || null);
+    setModalVisible(true);
   };
 
   return (
@@ -229,21 +227,29 @@ export default function ShelterDashboard() {
                 </View>
 
                 {user?.role === 'refugio' && (
-                  <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={() =>
-                      handleDelete(
-                        item.id,
-                        item.name
-                      )
-                    }
-                  >
-                    <Text style={{ fontSize: 24 }}>
-                      🗑️
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
+                    {/* Botón de Editar */}
+                    <TouchableOpacity
+                      style={styles.fab}
+                      onPress={() => {
+                        setEditingId(null); 
+                        setName(''); 
+                        setBreed(''); 
+                        setAge(''); 
+                        setDescription(''); 
+                        setImageUri(null);
+                        setModalVisible(true);
+                      }}
+                    >
+                      <Text style={{ fontSize: 24 }}>✏️</Text>
+                    </TouchableOpacity>
+                    
+                    {/* Botón de Eliminar existente */}
+                    <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item.id, item.name)}>
+                      <Text style={{ fontSize: 24 }}>🗑️</Text>
+                    </TouchableOpacity>
+                </View>
+                   )}   </View>
             </MotiView>
           )}
         />
@@ -566,4 +572,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  editarButton:{justifyContent: 'center',
+    paddingHorizontal: 16,
+  }
 });

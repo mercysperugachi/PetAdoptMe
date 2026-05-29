@@ -22,4 +22,8 @@ export class ManagePetsUseCase {
   async removePet(petId: string): Promise<void> {
     return this.petRepository.deletePet(petId);
   }
+
+  async editPet(petId: string, data: Partial<CreatePetDTO>): Promise<Pet> {
+    return this.petRepository.updatePet(petId, data);
+  }
 }

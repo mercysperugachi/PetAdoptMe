@@ -57,5 +57,21 @@ export const usePets = () => {
     }
   };
 
-  return { pets, isLoading, error, loadAllPets, createPet, deletePet };
-};
+// Añade esta función antes del return
+  const updatePet = async (petId: string, petData: Partial<CreatePetDTO>) => {
+    setLoading(true);
+    try {
+      const repo = new SupabasePetRepository();
+      const useCase = new ManagePetsUseCase(repo);
+      await useCase.editPet(petId, petData);
+      await loadAllPets(); // Recarga la lista
+    } catch (err: any) {
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Actualiza el return final para incluir updatePet
+return { pets, isLoading, error, loadAllPets, createPet, deletePet, updatePet }
+}

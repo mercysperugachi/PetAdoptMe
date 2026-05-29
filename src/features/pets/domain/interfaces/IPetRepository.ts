@@ -5,4 +5,5 @@ export interface IPetRepository {
   getShelterPets(shelterId: string): Promise<Pet[]>;
   createPet(shelterId: string, data: CreatePetDTO): Promise<Pet>;
   deletePet(petId: string): Promise<void>;
+  updatePet(petId: string, data: Partial<CreatePetDTO>): Promise<Pet>; 
 }

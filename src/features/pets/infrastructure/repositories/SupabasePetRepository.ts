@@ -85,4 +85,42 @@ export class SupabasePetRepository implements IPetRepository {
     const { error } = await supabase.from('pets').delete().eq('id', petId);
     if (error) throw error;
   }
+
+  async updatePet(petId: string, data: Partial<CreatePetDTO>): Promise<Pet> {
+    let imageUrl = data.imageUri;
+
+    // Si hay imagen y es local (file://), la subimos a Supabase
+    if (data.imageUri && !data.imageUri.startsWith('http')) {
+      try {
+        const ext = data.imageUri.substring(data.imageUri.lastIndexOf('.') + 1);
+        const fileName = `updates/${Date.now()}.${ext}`;
+        
+        const formData = new FormData();
+        formData.append('file', {
+          uri: data.imageUri, name: fileName, type: `image/${ext}`
+        } as any);
+
+        const { data: uploadData, error: uploadError } = await supabase.storage.from('pets-images').upload(fileName, formData);
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabase.storage.from('pets-images').getPublicUrl(uploadData.path);
+        imageUrl = publicUrlData.publicUrl;
+      } catch (err) {
+        throw new Error('No se pudo subir la nueva foto.');
+      }
+    }
+
+    const updatePayload: any = {
+      name: data.name, species: data.species, breed: data.breed,
+      age: data.age, size: data.size, description: data.description,
+    };
+
+    if (imageUrl) updatePayload.image_url = imageUrl;
+
+    const { data: updatedPet, error } = await supabase.from('pets').update(updatePayload).eq('id', petId).select().single();
+    if (error) throw error;
+    
+    return updatedPet;
+  }
+
 }
